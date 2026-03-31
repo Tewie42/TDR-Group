@@ -1,0 +1,81 @@
+:root {
+    --tdr-grey: #6E6E6E;
+    --tdr-blue: #1E73FF;
+    --tdr-red: #E53935;
+    --tdr-dark: #111;
+    --tdr-light: #F5F5F5;
+    --tdr-white: #FFF;
+}
+
+/* HEADER */
+.tdr-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 40px;
+    background: var(--tdr-white);
+    border-bottom: 2px solid var(--tdr-grey);
+}
+
+.tdr-logo {
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.tdr-logo .t { color: var(--tdr-grey); }
+.tdr-logo .d { color: var(--tdr-blue); }
+.tdr-logo .r { color: var(--tdr-red); }
+
+/* LAYOUT */
+.scaffcalc-container {
+    display: grid;
+    grid-template-columns: 260px 1fr 300px;
+    height: calc(100vh - 80px);
+}
+
+/* LEFT PANEL */
+.left-panel {
+    background: var(--tdr-light);
+    padding: 20px;
+    border-right: 2px solid var(--tdr-grey);
+    overflow-y: auto;
+}
+
+.left-panel input,
+.left-panel select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 12px;
+}
+
+/* CANVAS PANEL */
+.canvas-panel {
+    background: #fff;
+    position: relative;
+}
+
+#scaffCanvas {
+    width: 100%;
+    height: 100%;
+    background: #fafafa;
+    display: block;
+}
+
+/* RIGHT PANEL */
+.right-panel {
+    background: var(--tdr-light);
+    padding: 20px;
+    border-left: 2px solid var(--tdr-grey);
+    overflow-y: auto;
+}
+
+.export-btn {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background: var(--tdr-blue);
+    color: var(--tdr-white);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
