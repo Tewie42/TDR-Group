@@ -125,15 +125,18 @@ canvas.addEventListener("mouseup", (e) => {
     const h = endY - startY;
 
     if (w !== 0 && h !== 0) {
-        bays.push({
-            x: startX,
-            y: startY,
-            w: w,
-            h: h,
-            widthM: Math.abs(w / meterSizePx),
-            heightM: Math.abs(h / meterSizePx)
-        });
-    }
+    const bay = {
+        x: startX,
+        y: startY,
+        w: w,
+        h: h,
+        widthM: Math.abs(w / meterSizePx),
+        heightM: Math.abs(h / meterSizePx)
+    };
 
+    bays.push(bay);
+    project.bays = bays; // sync with global project state
+    updateSummary();     // update right panel
+}
     render();
 });
