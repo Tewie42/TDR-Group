@@ -1,0 +1,154 @@
+/* ---------- TDR BRAND COLORS ---------- */
+:root {
+    --tdr-grey: #6E6E6E;
+    --tdr-blue: #1E73FF;
+    --tdr-red: #E53935;
+    --tdr-dark: #111;
+    --tdr-light: #F5F5F5;
+    --tdr-white: #FFF;
+}
+
+/* ---------- GLOBAL ---------- */
+body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background: var(--tdr-light);
+    color: var(--tdr-dark);
+}
+
+/* ---------- HEADER ---------- */
+.tdr-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 40px;
+    background: var(--tdr-white);
+    border-bottom: 2px solid var(--tdr-grey);
+}
+
+.tdr-logo {
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.tdr-logo .t { color: var(--tdr-grey); }
+.tdr-logo .d { color: var(--tdr-blue); }
+.tdr-logo .r { color: var(--tdr-red); }
+
+/* ---------- NAVIGATION ---------- */
+.tdr-nav {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.nav-link {
+    color: var(--tdr-dark);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.nav-link.disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+/* ---------- DROPDOWN ---------- */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropbtn {
+    background: var(--tdr-dark);
+    color: var(--tdr-white);
+    padding: 10px 16px;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background: var(--tdr-white);
+    min-width: 180px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    z-index: 10;
+}
+
+.dropdown-content a {
+    color: var(--tdr-dark);
+    padding: 10px 14px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content a:hover {
+    background: var(--tdr-light);
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* ---------- HERO SECTION ---------- */
+.hero {
+    text-align: center;
+    padding: 80px 20px;
+    background: var(--tdr-white);
+}
+
+.hero h1 {
+    font-size: 42px;
+    margin-bottom: 10px;
+}
+
+.hero p {
+    font-size: 18px;
+    margin-bottom: 30px;
+}
+
+.cta-button {
+    background: var(--tdr-blue);
+    color: var(--tdr-white);
+    padding: 14px 28px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+/* ---------- TOOL PREVIEW ---------- */
+.tools-preview {
+    padding: 40px;
+    text-align: center;
+}
+
+.tool-card {
+    background: var(--tdr-white);
+    padding: 30px;
+    margin: 0 auto;
+    max-width: 400px;
+    border-radius: 8px;
+    border: 1px solid var(--tdr-grey);
+}
+
+.tool-button {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 10px 20px;
+    background: var(--tdr-red);
+    color: var(--tdr-white);
+    text-decoration: none;
+    border-radius: 4px;
+}
+
+/* ---------- FOOTER ---------- */
+.tdr-footer {
+    text-align: center;
+    padding: 20px;
+    background: var(--tdr-dark);
+    color: var(--tdr-white);
+    margin-top: 40px;
+}
