@@ -1,5 +1,5 @@
 // ------------------------------------------------------
-// SCAFFCALC GRID + BAY DRAWING + SIDE VIEW
+// SCAFFCALC GRID + BAY DRAWING + SIDE VIEW (OPTIMIZED)
 // ------------------------------------------------------
 
 // Canvas setup
@@ -10,13 +10,15 @@ canvas.width = canvas.parentElement.clientWidth;
 canvas.height = canvas.parentElement.clientHeight;
 
 // GLOBAL STATE
-let currentView = "top";          // "top" or "side"
-let meterSizePx = 50;             // 1m = 50px (updated by scaling)
-let bays = [];                    // top-view bays
-let selectedBay = null;           // selected bay for delete
-let isDrawing = false;            // drawing state
+let currentView = "top";          
+let meterSizePx = 50;             
+let bays = [];                    
+let selectedBay = null;           
+let isDrawing = false;            
 let startX = 0;
 let startY = 0;
+
+let needsRedraw = true; // <— DIRTY FLAG
 
 // ------------------------------------------------------
 // SNAP TO GRID
@@ -24,58 +26,16 @@ let startY = 0;
 function snap(value) {
     return Math.round(value / meterSizePx) * meterSizePx;
 }
-function drawOutriggersSideView() {
-    if (!project.outriggers.required) return;
 
-    const px = meterSizePx;
-    const lengthPx = project.outriggers.lengthM * px;
-
-    let x = 0;
-
-    project.bays.forEach(b => {
-        const w = b.widthM * px;
-        const baseY = canvas.height;
-
-        // Left outrigger
-        ctx.strokeStyle = "#FF9800"; // orange
-        ctx.lineWidth = 3;
-
-        ctx.beginPath();
-        ctx.moveTo(x, baseY);
-        ctx.lineTo(x - lengthPx, baseY);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.moveTo(x, baseY);
-        ctx.lineTo(x - lengthPx, baseY - (lengthPx * 0.5));
-        ctx.stroke();
-
-        // Right outrigger
-        ctx.beginPath();
-        ctx.moveTo(x + w, baseY);
-        ctx.lineTo(x + w + lengthPx, baseY);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.moveTo(x + w, baseY);
-        ctx.lineTo(x + w + lengthPx, baseY - (lengthPx * 0.5));
-        ctx.stroke();
-
-        x += w;
-    });
-}
 // ------------------------------------------------------
 // TOP VIEW GRID
 // ------------------------------------------------------
 function drawGrid() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
     ctx.strokeStyle = "#e0e0e0";
     ctx.lineWidth = 1;
 
     const totalWidthPx = project.totalWidthM * meterSizePx || (20 * meterSizePx);
 
-    // Vertical lines
     for (let x = 0; x <= totalWidthPx; x += meterSizePx) {
         ctx.beginPath();
         ctx.moveTo(x, 0);
@@ -83,7 +43,6 @@ function drawGrid() {
         ctx.stroke();
     }
 
-    // Horizontal lines
     for (let y = 0; y <= canvas.height; y += meterSizePx) {
         ctx.beginPath();
         ctx.moveTo(0, y);
@@ -104,6 +63,17 @@ function drawBays() {
         ctx.fillRect(b.x, b.y, b.w, b.h);
         ctx.strokeRect(b.x, b.y, b.w, b.h);
     });
+
+    if (selectedBay) {
+        ctx.strokeStyle = "#E53935";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(selectedBay.x, selectedBay.y, selectedBay.w, selectedBay.h);
+    }
+}
+
+// ------------------------------------------------------
+// OUTRIGGERS (TOP VIEW)
+// ------------------------------------------------------
 function drawOutriggersTopView() {
     if (!project.outriggers.required) return;
 
@@ -135,27 +105,17 @@ function drawOutriggersTopView() {
         ctx.stroke();
     });
 }
-    // Highlight selected bay
-    if (selectedBay) {
-        ctx.strokeStyle = "#E53935";
-        ctx.lineWidth = 3;
-        ctx.strokeRect(selectedBay.x, selectedBay.y, selectedBay.w, selectedBay.h);
-    }
-}
 
 // ------------------------------------------------------
 // SIDE VIEW GRID
 // ------------------------------------------------------
 function drawSideGrid() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
     ctx.strokeStyle = "#e0e0e0";
     ctx.lineWidth = 1;
 
     const px = meterSizePx;
     const totalHeightPx = project.totalHeightM * px;
 
-    // Horizontal lift lines
     for (let y = 0; y <= totalHeightPx; y += project.liftHeightM * px) {
         ctx.beginPath();
         ctx.moveTo(0, canvas.height - y);
@@ -163,7 +123,6 @@ function drawSideGrid() {
         ctx.stroke();
     }
 
-    // Vertical bay lines (matching top view)
     let x = 0;
     project.bays.forEach(b => {
         const w = b.widthM * px;
@@ -176,7 +135,6 @@ function drawSideGrid() {
         x += w;
     });
 
-    // Right boundary
     ctx.beginPath();
     ctx.moveTo(x, 0);
     ctx.lineTo(x, canvas.height);
@@ -184,7 +142,7 @@ function drawSideGrid() {
 }
 
 // ------------------------------------------------------
-// SIDE VIEW DRAWING
+// SIDE VIEW DRAWING (Platforms, Guardrails, Toe-boards, Ladders)
 // ------------------------------------------------------
 function drawSideView() {
     const px = meterSizePx;
@@ -212,44 +170,44 @@ function drawSideView() {
         for (let i = 1; i <= project.platformLevels; i++) {
             const platformY = canvas.height - (i * project.liftHeightM * px);
 
-            // Platform deck
+            // Platform
             ctx.strokeStyle = "#1E73FF";
             ctx.beginPath();
             ctx.moveTo(x, platformY);
             ctx.lineTo(x + w, platformY);
             ctx.stroke();
 
-            // Guardrails (1m and 1.5m above platform)
-            const guardrail1 = platformY - (1 * px);
-            const guardrail2 = platformY - (1.5 * px);
-
-            ctx.strokeStyle = "#E53935"; // red
+            // Guardrails
+            ctx.strokeStyle = "#E53935";
             ctx.lineWidth = 2;
 
+            const g1 = platformY - (1 * px);
+            const g2 = platformY - (1.5 * px);
+
             ctx.beginPath();
-            ctx.moveTo(x, guardrail1);
-            ctx.lineTo(x + w, guardrail1);
+            ctx.moveTo(x, g1);
+            ctx.lineTo(x + w, g1);
             ctx.stroke();
 
             ctx.beginPath();
-            ctx.moveTo(x, guardrail2);
-            ctx.lineTo(x + w, guardrail2);
+            ctx.moveTo(x, g2);
+            ctx.lineTo(x + w, g2);
             ctx.stroke();
 
-            // Toe-board (0.15m above platform)
-            const toeboardY = platformY - (0.15 * px);
-
-            ctx.strokeStyle = "#6E6E6E"; // grey
+            // Toe-board
+            ctx.strokeStyle = "#6E6E6E";
             ctx.lineWidth = 3;
 
+            const tb = platformY - (0.15 * px);
+
             ctx.beginPath();
-            ctx.moveTo(x, toeboardY);
-            ctx.lineTo(x + w, toeboardY);
+            ctx.moveTo(x, tb);
+            ctx.lineTo(x + w, tb);
             ctx.stroke();
         }
 
-        // Ladder (centered in bay)
-        ctx.strokeStyle = "#8B4513"; // brown
+        // Ladder
+        ctx.strokeStyle = "#8B4513";
         ctx.lineWidth = 3;
 
         const ladderX = x + w / 2;
@@ -269,20 +227,67 @@ function drawSideView() {
 }
 
 // ------------------------------------------------------
-// BACKGROUND IMAGE (from image-scale.js)
+// OUTRIGGERS (SIDE VIEW)
+// ------------------------------------------------------
+function drawOutriggersSideView() {
+    if (!project.outriggers.required) return;
+
+    const px = meterSizePx;
+    const lengthPx = project.outriggers.lengthM * px;
+
+    let x = 0;
+
+    project.bays.forEach(b => {
+        const w = b.widthM * px;
+        const baseY = canvas.height;
+
+        ctx.strokeStyle = "#FF9800";
+        ctx.lineWidth = 3;
+
+        // Left
+        ctx.beginPath();
+        ctx.moveTo(x, baseY);
+        ctx.lineTo(x - lengthPx, baseY);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(x, baseY);
+        ctx.lineTo(x - lengthPx, baseY - (lengthPx * 0.5));
+        ctx.stroke();
+
+        // Right
+        ctx.beginPath();
+        ctx.moveTo(x + w, baseY);
+        ctx.lineTo(x + w + lengthPx, baseY);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(x + w, baseY);
+        ctx.lineTo(x + w + lengthPx, baseY - (lengthPx * 0.5));
+        ctx.stroke();
+
+        x += w;
+    });
+}
+
+// ------------------------------------------------------
+// BACKGROUND IMAGE
 // ------------------------------------------------------
 function drawBackground() {
     if (!bgImage) return;
 
+    ctx.save();
     ctx.globalAlpha = bgOpacity;
     ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
-    ctx.globalAlpha = 1.0;
+    ctx.restore();
 }
 
 // ------------------------------------------------------
-// RENDER SWITCH
+// RENDER (Optimized)
 // ------------------------------------------------------
 function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
     drawBackground();
 
     if (currentView === "top") {
@@ -297,6 +302,19 @@ function render() {
         drawOutriggersSideView();
     }
 }
+
+// ------------------------------------------------------
+// ANIMATION LOOP (Smooth Rendering)
+// ------------------------------------------------------
+function animationLoop() {
+    if (needsRedraw) {
+        render();
+        needsRedraw = false;
+    }
+    requestAnimationFrame(animationLoop);
+}
+
+animationLoop();
 
 // ------------------------------------------------------
 // BAY CLICK DETECTION
@@ -322,15 +340,13 @@ canvas.addEventListener("mousedown", (e) => {
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
-    // Select bay
     const clickedBay = getBayAt(mouseX, mouseY);
     if (clickedBay) {
         selectedBay = clickedBay;
-        render();
+        needsRedraw = true;
         return;
     }
 
-    // Start drawing
     selectedBay = null;
     isDrawing = true;
 
@@ -341,11 +357,14 @@ canvas.addEventListener("mousedown", (e) => {
 canvas.addEventListener("mousemove", (e) => {
     if (!isDrawing || currentView !== "top") return;
 
-    render();
-
     const rect = canvas.getBoundingClientRect();
     const currentX = snap(e.clientX - rect.left);
     const currentY = snap(e.clientY - rect.top);
+
+    needsRedraw = true;
+
+    // Preview rectangle
+    render();
 
     const w = currentX - startX;
     const h = currentY - startY;
@@ -384,7 +403,7 @@ canvas.addEventListener("mouseup", (e) => {
         updateSummary();
     }
 
-    render();
+    needsRedraw = true;
 });
 
 // ------------------------------------------------------
@@ -397,10 +416,9 @@ document.addEventListener("keydown", (e) => {
             project.bays = bays;
             selectedBay = null;
             updateSummary();
-            render();
+            needsRedraw = true;
         }
     }
 });
 
-// Initial render
-render();
+   
