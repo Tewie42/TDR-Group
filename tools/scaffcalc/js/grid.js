@@ -13,7 +13,7 @@ canvas.height = canvas.parentElement.clientHeight;
 let meterSizePx = 50; // 1m = 50px
 let gridWidthM = 20;  // 20m wide scaffold
 let gridHeightM = 12; // default height
-
+let selectedBay = null;
 // PROJECT DATA
 let bays = []; // stores drawn bays
 
@@ -49,7 +49,16 @@ function drawGrid() {
         ctx.stroke();
     }
 }
-
+function getBayAt(x, y) {
+    for (let i = bays.length - 1; i >= 0; i--) {
+        const b = bays[i];
+        if (x >= b.x && x <= b.x + b.w &&
+            y >= b.y && y <= b.y + b.h) {
+            return b;
+        }
+    }
+    return null;
+}
 // ------------------------------------------------------
 // SNAP TO GRID
 // ------------------------------------------------------
@@ -68,7 +77,14 @@ function drawBays() {
     bays.forEach(bay => {
         ctx.fillRect(bay.x, bay.y, bay.w, bay.h);
         ctx.strokeRect(bay.x, bay.y, bay.w, bay.h);
-    });
+   // Highlight selected bay
+if (selectedBay) {
+    ctx.strokeStyle = "#E53935";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(selectedBay.x, selectedBay.y, selectedBay.w, selectedBay.h);
+    updateSummary();
+
+} });
 }
 
 // ------------------------------------------------------
@@ -86,11 +102,24 @@ render();
 // MOUSE EVENTS
 // ------------------------------------------------------
 canvas.addEventListener("mousedown", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    // Check if clicking an existing bay
+    const clickedBay = getBayAt(mouseX, mouseY);
+    if (clickedBay) {
+        selectedBay = clickedBay;
+        render();
+        return; // do NOT start drawing
+    }
+
+    // Otherwise start drawing a new bay
+    selectedBay = null;
     isDrawing = true;
 
-    const rect = canvas.getBoundingClientRect();
-    startX = snap(e.clientX - rect.left);
-    startY = snap(e.clientY - rect.top);
+    startX = snap(mouseX);
+    startY = snap(mouseY);
 });
 
 canvas.addEventListener("mousemove", (e) => {
@@ -139,4 +168,15 @@ canvas.addEventListener("mouseup", (e) => {
     updateSummary();     // update right panel
 }
     render();
+});
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Delete" || e.key === "Backspace") {
+        if (selectedBay) {
+            bays = bays.filter(b => b !== selectedBay);
+            project.bays = bays;
+            selectedBay = null;
+            updateSummary();
+            render();
+        }
+    }
 });
