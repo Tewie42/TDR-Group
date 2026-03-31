@@ -1,29 +1,32 @@
 // ------------------------------------------------------
-// S C A F F C A L C   G R I D   +   B A Y   D R A W I N G
+// SCAFFCALC GRID + BAY DRAWING + SIDE VIEW
 // ------------------------------------------------------
 
+// Canvas setup
 const canvas = document.getElementById("scaffCanvas");
 const ctx = canvas.getContext("2d");
 
-// Resize canvas to container
 canvas.width = canvas.parentElement.clientWidth;
 canvas.height = canvas.parentElement.clientHeight;
 
-// GRID SETTINGS
-let meterSizePx = 50; // 1m = 50px
-let gridWidthM = 20;  // 20m wide scaffold
-let gridHeightM = 12; // default height
-let selectedBay = null;
-// PROJECT DATA
-let bays = []; // stores drawn bays
-
-// MOUSE STATE
-let isDrawing = false;
+// GLOBAL STATE
+let currentView = "top";          // "top" or "side"
+let meterSizePx = 50;             // 1m = 50px (updated by scaling)
+let bays = [];                    // top-view bays
+let selectedBay = null;           // selected bay for delete
+let isDrawing = false;            // drawing state
 let startX = 0;
 let startY = 0;
 
 // ------------------------------------------------------
-// DRAW GRID
+// SNAP TO GRID
+// ------------------------------------------------------
+function snap(value) {
+    return Math.round(value / meterSizePx) * meterSizePx;
+}
+
+// ------------------------------------------------------
+// TOP VIEW GRID
 // ------------------------------------------------------
 function drawGrid() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -31,7 +34,7 @@ function drawGrid() {
     ctx.strokeStyle = "#e0e0e0";
     ctx.lineWidth = 1;
 
-    const totalWidthPx = gridWidthM * meterSizePx;
+    const totalWidthPx = project.totalWidthM * meterSizePx || (20 * meterSizePx);
 
     // Vertical lines
     for (let x = 0; x <= totalWidthPx; x += meterSizePx) {
@@ -49,6 +52,137 @@ function drawGrid() {
         ctx.stroke();
     }
 }
+
+// ------------------------------------------------------
+// DRAW BAYS (TOP VIEW)
+// ------------------------------------------------------
+function drawBays() {
+    ctx.fillStyle = "rgba(30, 115, 255, 0.35)";
+    ctx.strokeStyle = "#1E73FF";
+    ctx.lineWidth = 2;
+
+    bays.forEach(b => {
+        ctx.fillRect(b.x, b.y, b.w, b.h);
+        ctx.strokeRect(b.x, b.y, b.w, b.h);
+    });
+
+    // Highlight selected bay
+    if (selectedBay) {
+        ctx.strokeStyle = "#E53935";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(selectedBay.x, selectedBay.y, selectedBay.w, selectedBay.h);
+    }
+}
+
+// ------------------------------------------------------
+// SIDE VIEW GRID
+// ------------------------------------------------------
+function drawSideGrid() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.strokeStyle = "#e0e0e0";
+    ctx.lineWidth = 1;
+
+    const px = meterSizePx;
+    const totalHeightPx = project.totalHeightM * px;
+
+    // Horizontal lift lines
+    for (let y = 0; y <= totalHeightPx; y += project.liftHeightM * px) {
+        ctx.beginPath();
+        ctx.moveTo(0, canvas.height - y);
+        ctx.lineTo(canvas.width, canvas.height - y);
+        ctx.stroke();
+    }
+
+    // Vertical bay lines (matching top view)
+    let x = 0;
+    project.bays.forEach(b => {
+        const w = b.widthM * px;
+
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+
+        x += w;
+    });
+
+    // Right boundary
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, canvas.height);
+    ctx.stroke();
+}
+
+// ------------------------------------------------------
+// SIDE VIEW DRAWING
+// ------------------------------------------------------
+function drawSideView() {
+    ctx.strokeStyle = "#1E73FF";
+    ctx.lineWidth = 2;
+
+    const px = meterSizePx;
+    let x = 0;
+
+    project.bays.forEach(b => {
+        const w = b.widthM * px;
+        const h = project.totalHeightM * px;
+
+        // Standards
+        ctx.beginPath();
+        ctx.moveTo(x, canvas.height);
+        ctx.lineTo(x, canvas.height - h);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(x + w, canvas.height);
+        ctx.lineTo(x + w, canvas.height - h);
+        ctx.stroke();
+
+        // Platforms
+        for (let i = 1; i <= project.platformLevels; i++) {
+            const y = canvas.height - (i * project.liftHeightM * px);
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + w, y);
+            ctx.stroke();
+        }
+
+        x += w;
+    });
+}
+
+// ------------------------------------------------------
+// BACKGROUND IMAGE (from image-scale.js)
+// ------------------------------------------------------
+function drawBackground() {
+    if (!bgImage) return;
+
+    ctx.globalAlpha = bgOpacity;
+    ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+    ctx.globalAlpha = 1.0;
+}
+
+// ------------------------------------------------------
+// RENDER SWITCH
+// ------------------------------------------------------
+function render() {
+    drawBackground();
+
+    if (currentView === "top") {
+        drawGrid();
+        drawBays();
+    }
+
+    if (currentView === "side") {
+        drawSideGrid();
+        drawSideView();
+    }
+}
+
+// ------------------------------------------------------
+// BAY CLICK DETECTION
+// ------------------------------------------------------
 function getBayAt(x, y) {
     for (let i = bays.length - 1; i >= 0; i--) {
         const b = bays[i];
@@ -59,62 +193,26 @@ function getBayAt(x, y) {
     }
     return null;
 }
-// ------------------------------------------------------
-// SNAP TO GRID
-// ------------------------------------------------------
-function snap(value) {
-    return Math.round(value / meterSizePx) * meterSizePx;
-}
 
 // ------------------------------------------------------
-// DRAW ALL BAYS
-// ------------------------------------------------------
-function drawBays() {
-    ctx.fillStyle = "rgba(30, 115, 255, 0.35)";
-    ctx.strokeStyle = "#1E73FF";
-    ctx.lineWidth = 2;
-
-    bays.forEach(bay => {
-        ctx.fillRect(bay.x, bay.y, bay.w, bay.h);
-        ctx.strokeRect(bay.x, bay.y, bay.w, bay.h);
-   // Highlight selected bay
-if (selectedBay) {
-    ctx.strokeStyle = "#E53935";
-    ctx.lineWidth = 3;
-    ctx.strokeRect(selectedBay.x, selectedBay.y, selectedBay.w, selectedBay.h);
-    updateSummary();
-
-} });
-}
-
-// ------------------------------------------------------
-// MAIN DRAW LOOP
-// ------------------------------------------------------
-function render() {
-    drawBackground();
-    drawGrid();
-    drawBays();
-}
-
-render();
-
-// ------------------------------------------------------
-// MOUSE EVENTS
+// MOUSE EVENTS (TOP VIEW ONLY)
 // ------------------------------------------------------
 canvas.addEventListener("mousedown", (e) => {
+    if (currentView !== "top") return;
+
     const rect = canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
-    // Check if clicking an existing bay
+    // Select bay
     const clickedBay = getBayAt(mouseX, mouseY);
     if (clickedBay) {
         selectedBay = clickedBay;
         render();
-        return; // do NOT start drawing
+        return;
     }
 
-    // Otherwise start drawing a new bay
+    // Start drawing
     selectedBay = null;
     isDrawing = true;
 
@@ -123,7 +221,7 @@ canvas.addEventListener("mousedown", (e) => {
 });
 
 canvas.addEventListener("mousemove", (e) => {
-    if (!isDrawing) return;
+    if (!isDrawing || currentView !== "top") return;
 
     render();
 
@@ -143,7 +241,7 @@ canvas.addEventListener("mousemove", (e) => {
 });
 
 canvas.addEventListener("mouseup", (e) => {
-    if (!isDrawing) return;
+    if (!isDrawing || currentView !== "top") return;
     isDrawing = false;
 
     const rect = canvas.getBoundingClientRect();
@@ -154,21 +252,26 @@ canvas.addEventListener("mouseup", (e) => {
     const h = endY - startY;
 
     if (w !== 0 && h !== 0) {
-    const bay = {
-        x: startX,
-        y: startY,
-        w: w,
-        h: h,
-        widthM: Math.abs(w / meterSizePx),
-        heightM: Math.abs(h / meterSizePx)
-    };
+        const bay = {
+            x: startX,
+            y: startY,
+            w: w,
+            h: h,
+            widthM: Math.abs(w / meterSizePx),
+            heightM: Math.abs(h / meterSizePx)
+        };
 
-    bays.push(bay);
-    project.bays = bays; // sync with global project state
-    updateSummary();     // update right panel
-}
+        bays.push(bay);
+        project.bays = bays;
+        updateSummary();
+    }
+
     render();
 });
+
+// ------------------------------------------------------
+// DELETE SELECTED BAY
+// ------------------------------------------------------
 document.addEventListener("keydown", (e) => {
     if (e.key === "Delete" || e.key === "Backspace") {
         if (selectedBay) {
@@ -180,3 +283,6 @@ document.addEventListener("keydown", (e) => {
         }
     }
 });
+
+// Initial render
+render();
