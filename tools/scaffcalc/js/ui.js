@@ -74,3 +74,50 @@ function updateSummary() {
 
     document.getElementById("stabilityWarning").textContent = stabilityWarning;
 }
+    document.querySelector(".export-btn").addEventListener("click", exportPDF);
+function exportPDF() {
+    const content = `
+TDR Group - Scaffcalc Report
+
+Project: ${document.getElementById("projectName").value}
+
+----------------------------------------
+DIMENSIONS
+----------------------------------------
+Total Width: ${project.totalWidthM.toFixed(1)} m
+Total Height: ${project.totalHeightM.toFixed(1)} m
+Bays: ${project.bays.length}
+Lifts: ${project.platformLevels}
+Platforms: ${project.platformLevels}
+
+----------------------------------------
+MATERIALS
+----------------------------------------
+Standards: ${document.getElementById("stdCount").textContent}
+Ledgers: ${document.getElementById("ledgerCount").textContent}
+Transoms: ${document.getElementById("transomCount").textContent}
+Braces: ${document.getElementById("braceCount").textContent}
+Platforms: ${document.getElementById("deckCount").textContent}
+
+----------------------------------------
+TOTALS
+----------------------------------------
+Weight: ${document.getElementById("totalWeight").textContent} tons
+Estimated Man-Hours: ${document.getElementById("manHours").textContent}
+
+----------------------------------------
+STABILITY
+----------------------------------------
+${document.getElementById("stabilityWarning").textContent}
+`;
+
+    const blob = new Blob([content], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "scaffcalc_report.pdf";
+    a.click();
+
+    URL.revokeObjectURL(url);
+}
