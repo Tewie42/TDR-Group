@@ -3,12 +3,17 @@
 // ------------------------------------------------------
 
 function updateSummary() {
-
+document.getElementById("heightInput").addEventListener("input", function(e) {
+    project.totalHeightM = parseFloat(e.target.value) || 0;
+    project.platformLevels = Math.floor(project.totalHeightM / project.liftHeightM);
+    updateSummary();
+});
+    
     // Width = sum of bay widths
     project.totalWidthM = project.bays.reduce((sum, b) => sum + b.widthM, 0);
 
-    // Height = tallest bay
-    project.totalHeightM = Math.max(...project.bays.map(b => b.heightM), 0);
+    // Height is manually set in top view
+    // (Side view will override this later)
 
     // Platform levels = height / lift height
     project.platformLevels = Math.floor(project.totalHeightM / project.liftHeightM);
