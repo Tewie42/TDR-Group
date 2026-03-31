@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scaffcalc | TDR Group</title>
+    <link rel="stylesheet" href="css/scaffcalc.css">
+</head>
+
+<body>
+
+<header class="tdr-header">
+    <div class="tdr-logo">
+        <span class="t">T</span><span class="d">D</span><span class="r">R</span> Scaffcalc
+    </div>
+
+    <nav class="tdr-nav">
+        <a href="../../index.html" class="nav-link">TDR Home</a>
+
+        <div class="dropdown">
+            <button class="dropbtn">Tools ▾</button>
+            <div class="dropdown-content">
+                <a href="scaffcalc.html">Scaffold Calculator</a>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<div class="scaffcalc-container">
+
+    <!-- LEFT PANEL -->
+    <aside class="left-panel">
+        <h2>Project Settings</h2>
+
+        <label>Project Name</label>
+        <input type="text" id="projectName" placeholder="e.g. Boiler Scaffold">
+
+        <label>Scaffold System</label>
+        <select id="systemSelect">
+            <option>Kwikstage (Galvanized Steel)</option>
+        </select>
+
+        <label>Grid Size (meters)</label>
+        <select id="gridSize">
+            <option value="1">1m</option>
+            <option value="0.5">0.5m</option>
+            <option value="1.5">1.5m</option>
+            <option value="2">2m</option>
+        </select>
+
+        <label>View</label>
+        <select id="viewMode">
+            <option value="top">Top View</option>
+            <option value="side">Side View</option>
+        </select>
+
+        <h3>Background Image</h3>
+        <input type="file" id="bgUpload">
+
+        <button id="setScaleBtn">Set Scale (2 points = 1m)</button>
+
+        <label>Image Opacity</label>
+        <input type="range" id="opacitySlider" min="0" max="100" value="50">
+    </aside>
+
+    <!-- CENTER PANEL (CANVAS) -->
+    <main class="canvas-panel">
+        <canvas id="scaffCanvas"></canvas>
+    </main>
+
+    <!-- RIGHT PANEL -->
+    <aside class="right-panel">
+        <h2>Scaffold Summary</h2>
+
+        <div id="summary">
+            <p>Total Width: <span id="totalWidth">0</span> m</p>
+            <p>Total Height: <span id="totalHeight">0</span> m</p>
+            <p>Bays: <span id="bayCount">0</span></p>
+            <p>Lifts: <span id="liftCount">0</span></p>
+            <p>Platforms: <span id="platformCount">0</span></p>
+
+            <h3>Materials</h3>
+            <p>Standards: <span id="stdCount">0</span></p>
+            <p>Ledgers: <span id="ledgerCount">0</span></p>
+            <p>Transoms: <span id="transomCount">0</span></p>
+            <p>Braces: <span id="braceCount">0</span></p>
+            <p>Platforms: <span id="deckCount">0</span></p>
+
+            <h3>Totals</h3>
+            <p>Total Weight: <span id="totalWeight">0</span> tons</p>
+            <p>Estimated Man‑Hours: <span id="manHours">0</span></p>
+        </div>
+
+        <button class="export-btn">Export PDF</button>
+        <button class="export-btn">Export CSV</button>
+    </aside>
+
+</div>
+
+<script src="js/scaffcalc.js"></script>
+</body>
+</html>
