@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scaffcalc | TDR Group</title>
-    <link rel="stylesheet" href="../../css/scaffcalc.css">
+    <link rel="stylesheet" href="css/scaffcalc.css">
 </head>
 
 <body>
@@ -34,26 +34,25 @@
 
         <label>Project Name</label>
         <input type="text" id="projectName" placeholder="e.g. Boiler Scaffold">
+
+        <label>View Mode</label>
+        <select id="viewMode">
+            <option value="top">Top View</option>
+            <option value="side">Side View</option>
+        </select>
+
         <label>Total Height (m)</label>
         <input type="number" id="heightInput" value="10" min="2" step="1">
 
-        <label>Scaffold System</label>
-        <select id="systemSelect">
-            <option>Kwikstage (Galvanized Steel)</option>
-        </select>
+        <label>Lift Height (m)</label>
+        <input type="number" id="liftHeight" value="2" disabled>
 
-        <label>Grid Size (meters)</label>
+        <label>Grid Size (m)</label>
         <select id="gridSize">
             <option value="1">1m</option>
             <option value="0.5">0.5m</option>
             <option value="1.5">1.5m</option>
             <option value="2">2m</option>
-        </select>
-
-        <label>View</label>
-        <select id="viewMode">
-            <option value="top">Top View</option>
-            <option value="side">Side View</option>
         </select>
 
         <h3>Background Image</h3>
@@ -65,7 +64,7 @@
         <input type="range" id="opacitySlider" min="0" max="100" value="50">
     </aside>
 
-    <!-- CENTER PANEL (CANVAS) -->
+    <!-- CENTER PANEL -->
     <main class="canvas-panel">
         <canvas id="scaffCanvas"></canvas>
     </main>
@@ -74,24 +73,27 @@
     <aside class="right-panel">
         <h2>Scaffold Summary</h2>
 
-        <div id="summary">
-            <p>Total Width: <span id="totalWidth">0</span> m</p>
-            <p>Total Height: <span id="totalHeight">0</span> m</p>
-            <p>Bays: <span id="bayCount">0</span></p>
-            <p>Lifts: <span id="liftCount">0</span></p>
-            <p>Platforms: <span id="platformCount">0</span></p>
+        <p>Total Width: <span id="totalWidth">0</span> m</p>
+        <p>Total Height: <span id="totalHeight">0</span> m</p>
+        <p>Bays: <span id="bayCount">0</span></p>
+        <p>Lifts: <span id="liftCount">0</span></p>
+        <p>Platforms: <span id="platformCount">0</span></p>
 
-            <h3>Materials</h3>
-            <p>Standards: <span id="stdCount">0</span></p>
-            <p>Ledgers: <span id="ledgerCount">0</span></p>
-            <p>Transoms: <span id="transomCount">0</span></p>
-            <p>Braces: <span id="braceCount">0</span></p>
-            <p>Platforms: <span id="deckCount">0</span></p>
+        <h3>Materials</h3>
+        <p>Standards: <span id="stdCount">0</span></p>
+        <p>Ledgers: <span id="ledgerCount">0</span></p>
+        <p>Transoms: <span id="transomCount">0</span></p>
+        <p>Braces: <span id="braceCount">0</span></p>
+        <p>Platforms: <span id="deckCount">0</span></p>
 
-            <h3>Totals</h3>
-            <p>Total Weight: <span id="totalWeight">0</span> tons</p>
-            <p>Estimated Man‑Hours: <span id="manHours">0</span></p>
-        </div>
+        <h3>Totals</h3>
+        <p>Total Weight: <span id="totalWeight">0</span> tons</p>
+        <p>Estimated Man‑Hours: <span id="manHours">0</span></p>
+
+        <h3>Stability</h3>
+        <p id="stabilityWarning" style="color:#E53935; font-weight:600;">
+            Stable within standard height-to-base ratio.
+        </p>
 
         <button class="export-btn">Export PDF</button>
         <button class="export-btn">Export CSV</button>
@@ -99,11 +101,13 @@
 
 </div>
 
+<!-- JS FILES -->
 <script src="js/kwikstage.js"></script>
 <script src="js/calc.js"></script>
 <script src="js/project.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/image-scale.js"></script>
 <script src="js/grid.js"></script>
+
 </body>
 </html>
