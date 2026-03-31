@@ -75,6 +75,7 @@ function drawBays() {
 // MAIN DRAW LOOP
 // ------------------------------------------------------
 function render() {
+    drawBackground();
     drawGrid();
     drawBays();
 }
