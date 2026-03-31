@@ -118,9 +118,6 @@ function drawSideGrid() {
 // SIDE VIEW DRAWING
 // ------------------------------------------------------
 function drawSideView() {
-    ctx.strokeStyle = "#1E73FF";
-    ctx.lineWidth = 2;
-
     const px = meterSizePx;
     let x = 0;
 
@@ -129,6 +126,9 @@ function drawSideView() {
         const h = project.totalHeightM * px;
 
         // Standards
+        ctx.strokeStyle = "#1E73FF";
+        ctx.lineWidth = 2;
+
         ctx.beginPath();
         ctx.moveTo(x, canvas.height);
         ctx.lineTo(x, canvas.height - h);
@@ -139,12 +139,59 @@ function drawSideView() {
         ctx.lineTo(x + w, canvas.height - h);
         ctx.stroke();
 
-        // Platforms
+        // Platforms + Guardrails + Toe-boards
         for (let i = 1; i <= project.platformLevels; i++) {
-            const y = canvas.height - (i * project.liftHeightM * px);
+            const platformY = canvas.height - (i * project.liftHeightM * px);
+
+            // Platform deck
+            ctx.strokeStyle = "#1E73FF";
             ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x + w, y);
+            ctx.moveTo(x, platformY);
+            ctx.lineTo(x + w, platformY);
+            ctx.stroke();
+
+            // Guardrails (1m and 1.5m above platform)
+            const guardrail1 = platformY - (1 * px);
+            const guardrail2 = platformY - (1.5 * px);
+
+            ctx.strokeStyle = "#E53935"; // red
+            ctx.lineWidth = 2;
+
+            ctx.beginPath();
+            ctx.moveTo(x, guardrail1);
+            ctx.lineTo(x + w, guardrail1);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(x, guardrail2);
+            ctx.lineTo(x + w, guardrail2);
+            ctx.stroke();
+
+            // Toe-board (0.15m above platform)
+            const toeboardY = platformY - (0.15 * px);
+
+            ctx.strokeStyle = "#6E6E6E"; // grey
+            ctx.lineWidth = 3;
+
+            ctx.beginPath();
+            ctx.moveTo(x, toeboardY);
+            ctx.lineTo(x + w, toeboardY);
+            ctx.stroke();
+        }
+
+        // Ladder (centered in bay)
+        ctx.strokeStyle = "#8B4513"; // brown
+        ctx.lineWidth = 3;
+
+        const ladderX = x + w / 2;
+
+        for (let i = 0; i < project.platformLevels; i++) {
+            const bottom = canvas.height - (i * project.liftHeightM * px);
+            const top = canvas.height - ((i + 1) * project.liftHeightM * px);
+
+            ctx.beginPath();
+            ctx.moveTo(ladderX, bottom);
+            ctx.lineTo(ladderX, top);
             ctx.stroke();
         }
 
