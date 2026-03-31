@@ -24,7 +24,46 @@ let startY = 0;
 function snap(value) {
     return Math.round(value / meterSizePx) * meterSizePx;
 }
+function drawOutriggersSideView() {
+    if (!project.outriggers.required) return;
 
+    const px = meterSizePx;
+    const lengthPx = project.outriggers.lengthM * px;
+
+    let x = 0;
+
+    project.bays.forEach(b => {
+        const w = b.widthM * px;
+        const baseY = canvas.height;
+
+        // Left outrigger
+        ctx.strokeStyle = "#FF9800"; // orange
+        ctx.lineWidth = 3;
+
+        ctx.beginPath();
+        ctx.moveTo(x, baseY);
+        ctx.lineTo(x - lengthPx, baseY);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(x, baseY);
+        ctx.lineTo(x - lengthPx, baseY - (lengthPx * 0.5));
+        ctx.stroke();
+
+        // Right outrigger
+        ctx.beginPath();
+        ctx.moveTo(x + w, baseY);
+        ctx.lineTo(x + w + lengthPx, baseY);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(x + w, baseY);
+        ctx.lineTo(x + w + lengthPx, baseY - (lengthPx * 0.5));
+        ctx.stroke();
+
+        x += w;
+    });
+}
 // ------------------------------------------------------
 // TOP VIEW GRID
 // ------------------------------------------------------
@@ -65,7 +104,37 @@ function drawBays() {
         ctx.fillRect(b.x, b.y, b.w, b.h);
         ctx.strokeRect(b.x, b.y, b.w, b.h);
     });
+function drawOutriggersTopView() {
+    if (!project.outriggers.required) return;
 
+    const px = meterSizePx;
+    const lengthPx = project.outriggers.lengthM * px;
+
+    bays.forEach(b => {
+        const leftX = b.x;
+        const rightX = b.x + b.w;
+        const y = b.y + b.h;
+
+        ctx.strokeStyle = "#FF9800";
+        ctx.lineWidth = 2;
+
+        // Left triangle
+        ctx.beginPath();
+        ctx.moveTo(leftX, y);
+        ctx.lineTo(leftX - lengthPx, y + lengthPx);
+        ctx.lineTo(leftX, y + lengthPx);
+        ctx.closePath();
+        ctx.stroke();
+
+        // Right triangle
+        ctx.beginPath();
+        ctx.moveTo(rightX, y);
+        ctx.lineTo(rightX + lengthPx, y + lengthPx);
+        ctx.lineTo(rightX, y + lengthPx);
+        ctx.closePath();
+        ctx.stroke();
+    });
+}
     // Highlight selected bay
     if (selectedBay) {
         ctx.strokeStyle = "#E53935";
@@ -219,11 +288,13 @@ function render() {
     if (currentView === "top") {
         drawGrid();
         drawBays();
+        drawOutriggersTopView();
     }
 
     if (currentView === "side") {
         drawSideGrid();
         drawSideView();
+        drawOutriggersSideView();
     }
 }
 
