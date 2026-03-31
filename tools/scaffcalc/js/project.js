@@ -11,3 +11,7 @@ const project = {
     gridSizeM: 1,
     system: "Kwikstage",
 };
+project.outriggers = {
+    required: false,
+    lengthM: 0
+};
