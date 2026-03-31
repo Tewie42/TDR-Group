@@ -74,6 +74,23 @@ function updateSummary() {
 
     document.getElementById("stabilityWarning").textContent = stabilityWarning;
 }
+// ------------------------------------------------------
+// OUTRIGGER CALCULATION
+// ------------------------------------------------------
+if (height > baseWidth * 3) {
+    project.outriggers.required = true;
+    project.outriggers.lengthM = (height / 3) - baseWidth;
+} else {
+    project.outriggers.required = false;
+    project.outriggers.lengthM = 0;
+}
+
+document.getElementById("outriggerStatus").textContent =
+    project.outriggers.required ? "Required" : "Not Required";
+
+document.getElementById("outriggerLength").textContent =
+    project.outriggers.lengthM.toFixed(2);
+
     document.querySelector(".export-btn").addEventListener("click", exportPDF);
 function exportPDF() {
     const content = `
