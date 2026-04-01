@@ -21,6 +21,8 @@ let selectedBay = null;
 let isDrawing = false;
 let startX = 0;
 let startY = 0;
+let previewW = 0;
+let previewH = 0;
 let currentView = "top";
 
 let needsRedraw = true;
@@ -67,10 +69,6 @@ function buildGrid() {
         gridCtx.stroke();
     }
 }
-
-buildGrid();
-needsRedraw = true;
-
 
 // ------------------------------------------------------
 // BACKGROUND IMAGE (PRE-SCALED ONCE)
@@ -267,6 +265,16 @@ function render() {
     if (currentView === "top") {
         ctx.drawImage(baysCanvas, 0, 0);
         ctx.drawImage(outriggersCanvas, 0, 0);
+
+        // LIVE PREVIEW
+        if (isDrawing) {
+            ctx.fillStyle = "rgba(229,57,53,0.25)";
+            ctx.strokeStyle = "#E53935";
+            ctx.lineWidth = 2;
+
+            ctx.fillRect(startX, startY, previewW, previewH);
+            ctx.strokeRect(startX, startY, previewW, previewH);
+        }
     }
 
     if (currentView === "side") {
@@ -282,8 +290,6 @@ function animationLoop() {
     }
     requestAnimationFrame(animationLoop);
 }
-
-animationLoop();
 
 // ------------------------------------------------------
 // BAY SELECTION
@@ -306,8 +312,8 @@ canvas.addEventListener("mousedown", e => {
     if (currentView !== "top") return;
 
     const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
+    const mx = snap(e.clientX - rect.left);
+    const my = snap(e.clientY - rect.top);
 
     const hit = getBayAt(mx, my);
     if (hit) {
@@ -319,8 +325,8 @@ canvas.addEventListener("mousedown", e => {
     selectedBay = null;
     isDrawing = true;
 
-    startX = snap(mx);
-    startY = snap(my);
+    startX = mx;
+    startY = my;
 });
 
 canvas.addEventListener("mousemove", e => {
@@ -330,18 +336,10 @@ canvas.addEventListener("mousemove", e => {
     const mx = snap(e.clientX - rect.left);
     const my = snap(e.clientY - rect.top);
 
+    previewW = mx - startX;
+    previewH = my - startY;
+
     needsRedraw = true;
-    
-
-    const w = mx - startX;
-    const h = my - startY;
-
-    ctx.fillStyle = "rgba(229,57,53,0.25)";
-    ctx.strokeStyle = "#E53935";
-    ctx.lineWidth = 2;
-
-    ctx.fillRect(startX, startY, w, h);
-    ctx.strokeRect(startX, startY, w, h);
 });
 
 canvas.addEventListener("mouseup", e => {
@@ -395,9 +393,13 @@ document.addEventListener("keydown", e => {
         needsRedraw = true;
     }
 });
+
 // ------------------------------------------------------
 // INITIALIZE
 // ------------------------------------------------------
 buildGrid();
+rebuildBays();
+rebuildSideView();
+rebuildOutriggers();
 needsRedraw = true;
 animationLoop();
