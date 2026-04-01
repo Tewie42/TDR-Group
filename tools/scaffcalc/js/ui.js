@@ -3,9 +3,9 @@
 // ------------------------------------------------------
 
 // Handle view switching (top / side)
-document.getElementById("viewMode").addEventListener("change", function (e) {
+document.getElementById("viewMode").addEventListener("change", e => {
     currentView = e.target.value;
-    render();
+    needsRedraw = true;
 });
 
 // Handle manual height input
@@ -19,6 +19,22 @@ document.getElementById("heightInput").addEventListener("input", function (e) {
 document.getElementById("gridSize").addEventListener("change", function (e) {
     meterSizePx = parseFloat(e.target.value) * 50; // 1m = 50px baseline
     render();
+});
+// BACKGROUND IMAGE UPLOAD
+document.getElementById("bgUpload").addEventListener("change", e => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const img = new Image();
+    img.onload = () => setBackground(img);
+    img.src = URL.createObjectURL(file);
+});
+
+// BACKGROUND OPACITY
+document.getElementById("opacitySlider").addEventListener("input", e => {
+    bgOpacity = e.target.value / 100;
+    if (bgImage) setBackground(bgImage);
+    needsRedraw = true;
 });
 
 // ------------------------------------------------------
@@ -91,7 +107,7 @@ document.getElementById("outriggerStatus").textContent =
 document.getElementById("outriggerLength").textContent =
     project.outriggers.lengthM.toFixed(2);
 
-    document.querySelector(".export-btn").addEventListener("click", exportPDF);
+    document.getElementById("pdfBtn").addEventListener("click", exportPDF);
 function exportPDF() {
     const content = `
 TDR Group - Scaffcalc Report
