@@ -5,6 +5,12 @@
 // Handle view switching (top / side)
 document.getElementById("viewMode").addEventListener("change", e => {
     currentView = e.target.value;
+
+    if (currentView === "side") {
+        rebuildSideView();
+        rebuildOutriggers();
+    }
+
     needsRedraw = true;
 });
 
@@ -12,7 +18,11 @@ document.getElementById("viewMode").addEventListener("change", e => {
 document.getElementById("heightInput").addEventListener("input", function (e) {
     project.totalHeightM = parseFloat(e.target.value) || 0;
     project.platformLevels = Math.floor(project.totalHeightM / project.liftHeightM);
+
+    rebuildSideView();
+    rebuildOutriggers();
     updateSummary();
+    needsRedraw = true;
 });
 
 // Handle grid size change (optional future feature)
@@ -20,6 +30,7 @@ document.getElementById("gridSize").addEventListener("change", function (e) {
     meterSizePx = parseFloat(e.target.value) * 50; // 1m = 50px baseline
     render();
 });
+
 // BACKGROUND IMAGE UPLOAD
 document.getElementById("bgUpload").addEventListener("change", e => {
     const file = e.target.files[0];
@@ -89,35 +100,41 @@ function updateSummary() {
     }
 
     document.getElementById("stabilityWarning").textContent = stabilityWarning;
+
+    // OUTRIGGER CALCULATION
+    if (height > baseWidth * 3) {
+        project.outriggers.required = true;
+        project.outriggers.lengthM = (height / 3) - baseWidth;
+    } else {
+        project.outriggers.required = false;
+        project.outriggers.lengthM = 0;
+    }
+
+    document.getElementById("outriggerStatus").textContent =
+        project.outriggers.required ? "Required" : "Not Required";
+
+    document.getElementById("outriggerLength").textContent =
+        project.outriggers.lengthM.toFixed(2);
 }
+
+// PLATFORM INPUT (manual override)
 const platformInput = document.getElementById("platformInput");
 if (platformInput) {
     platformInput.addEventListener("input", e => {
         project.platformLevels = parseInt(e.target.value) || 0;
+
         rebuildSideView();
         rebuildOutriggers();
         updateSummary();
         needsRedraw = true;
     });
 }
+
 // ------------------------------------------------------
-// OUTRIGGER CALCULATION
+// PDF EXPORT
 // ------------------------------------------------------
-if (height > baseWidth * 3) {
-    project.outriggers.required = true;
-    project.outriggers.lengthM = (height / 3) - baseWidth;
-} else {
-    project.outriggers.required = false;
-    project.outriggers.lengthM = 0;
-}
+document.getElementById("pdfBtn").addEventListener("click", exportPDF);
 
-document.getElementById("outriggerStatus").textContent =
-    project.outriggers.required ? "Required" : "Not Required";
-
-document.getElementById("outriggerLength").textContent =
-    project.outriggers.lengthM.toFixed(2);
-
-    document.getElementById("pdfBtn").addEventListener("click", exportPDF);
 function exportPDF() {
     const content = `
 TDR Group - Scaffcalc Report
