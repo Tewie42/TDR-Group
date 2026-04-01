@@ -70,7 +70,7 @@ function buildGrid() {
 
 buildGrid();
 needsRedraw = true;
-animationLoop();
+
 
 // ------------------------------------------------------
 // BACKGROUND IMAGE (PRE-SCALED ONCE)
@@ -395,3 +395,9 @@ document.addEventListener("keydown", e => {
         needsRedraw = true;
     }
 });
+// ------------------------------------------------------
+// INITIALIZE
+// ------------------------------------------------------
+buildGrid();
+needsRedraw = true;
+animationLoop();
