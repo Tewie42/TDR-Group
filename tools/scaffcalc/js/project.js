@@ -4,10 +4,10 @@
 
 const project = {
     bays: [],
-    totalWidthM: 0,
+    totalWidthM: 10,
     totalHeightM: 0,
     liftHeightM: 2,
-    platformLevels: 0,
+    platformLevels: 3,
     gridSizeM: 1,
     system: "Kwikstage",
 };
