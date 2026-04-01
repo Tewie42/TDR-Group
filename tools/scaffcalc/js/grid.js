@@ -346,7 +346,7 @@ canvas.addEventListener("mouseup", e => {
             w: w,
             h: h,
             widthM: Math.abs(w / meterSizePx),
-            heightM: project.totalHeightM,
+            heightM: Math.abs(h / meterSizePx),
             platforms: []   // REQUIRED FOR SIDE VIEW
         };
 
