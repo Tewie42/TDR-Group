@@ -341,14 +341,26 @@ canvas.addEventListener("mouseup", e => {
 
     if (w !== 0 && h !== 0) {
         const bay = {
-    x: startX,
-    y: startY,
-    w: w,
-    h: h,
-    widthM: Math.abs(w / meterSizePx),
-    heightM: Math.abs(h / meterSizePx),
-    platforms: []   // REQUIRED FOR SIDE VIEW
-};
+            x: startX,
+            y: startY,
+            w: w,
+            h: h,
+            widthM: Math.abs(w / meterSizePx),
+            heightM: Math.abs(h / meterSizePx),
+            platforms: []   // REQUIRED FOR SIDE VIEW
+        };
+
+        bays.push(bay);
+        project.bays = bays;
+
+        rebuildBays();
+        rebuildSideView();
+        rebuildOutriggers();
+        updateSummary();
+    }
+
+    needsRedraw = true;
+});
 
         bays.push(bay);
         project.bays = bays;
