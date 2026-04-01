@@ -331,7 +331,7 @@ canvas.addEventListener("mousemove", e => {
     const my = snap(e.clientY - rect.top);
 
     needsRedraw = true;
-    render();
+    
 
     const w = mx - startX;
     const h = my - startY;
