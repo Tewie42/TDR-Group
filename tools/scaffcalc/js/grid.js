@@ -1,21 +1,19 @@
 // ------------------------------------------------------
-// SCAFFCALC — MULTI-LAYER GRID + SIDE VIEW EDITOR
+// SCAFFCALC — GRID + SIDE VIEW ENGINE
 // ------------------------------------------------------
 
-// FIXED CANVAS SIZE (50m × 30px = 1500px)
+// MAIN CANVAS
 const canvas = document.getElementById("scaffCanvas");
 const ctx = canvas.getContext("2d");
 
 canvas.width = 1500;
 canvas.height = 1500;
-
-// LIGHT GREY BACKGROUND
 canvas.style.background = "#f5f5f5";
 
 // SCALE
-const meterSizePx = 30;
+let meterSizePx = 30;
 
-// GLOBAL STATE
+// STATE
 let bays = [];
 let selectedBay = null;
 let isDrawing = false;
@@ -24,7 +22,6 @@ let startY = 0;
 let previewW = 0;
 let previewH = 0;
 let currentView = "top";
-
 let needsRedraw = true;
 
 // ------------------------------------------------------
@@ -45,13 +42,17 @@ let sideCtx = sideCanvas.getContext("2d");
 let outriggersCanvas = document.createElement("canvas");
 let outriggersCtx = outriggersCanvas.getContext("2d");
 
+bgCanvas.width = gridCanvas.width = baysCanvas.width =
+sideCanvas.width = outriggersCanvas.width = 1500;
+
+bgCanvas.height = gridCanvas.height = baysCanvas.height =
+sideCanvas.height = outriggersCanvas.height = 1500;
+
 // ------------------------------------------------------
-// BUILD GRID (50 × 50)
+// GRID
 // ------------------------------------------------------
 function buildGrid() {
-    gridCanvas.width = canvas.width;
-    gridCanvas.height = canvas.height;
-
+    gridCtx.clearRect(0, 0, 1500, 1500);
     gridCtx.strokeStyle = "#e0e0e0";
     gridCtx.lineWidth = 1;
 
@@ -77,31 +78,24 @@ let bgImage = null;
 let bgOpacity = 0.5;
 
 function setBackground(img) {
-    bgCanvas.width = canvas.width;
-    bgCanvas.height = canvas.height;
-
     bgCtx.clearRect(0, 0, 1500, 1500);
     bgCtx.globalAlpha = bgOpacity;
     bgCtx.drawImage(img, 0, 0, 1500, 1500);
-
-    bgImage = bgCanvas;
+    bgImage = img;
     needsRedraw = true;
 }
 
 // ------------------------------------------------------
-// SNAP TO GRID
+// SNAP
 // ------------------------------------------------------
 function snap(v) {
     return Math.round(v / meterSizePx) * meterSizePx;
 }
 
 // ------------------------------------------------------
-// REBUILD BAYS LAYER
+// REBUILD BAYS (TOP VIEW)
 // ------------------------------------------------------
 function rebuildBays() {
-    baysCanvas.width = 1500;
-    baysCanvas.height = 1500;
-
     baysCtx.clearRect(0, 0, 1500, 1500);
 
     baysCtx.fillStyle = "rgba(30,115,255,0.35)";
@@ -115,12 +109,9 @@ function rebuildBays() {
 }
 
 // ------------------------------------------------------
-// REBUILD SIDE VIEW LAYER (with platform arrays)
+// REBUILD SIDE VIEW
 // ------------------------------------------------------
 function rebuildSideView() {
-    sideCanvas.width = 1500;
-    sideCanvas.height = 1500;
-
     sideCtx.clearRect(0, 0, 1500, 1500);
 
     const px = meterSizePx;
@@ -144,13 +135,13 @@ function rebuildSideView() {
         sideCtx.lineTo(x + w, 1500 - h);
         sideCtx.stroke();
 
-        // Platforms (user‑defined)
+        // Platforms
         b.platforms.sort((a, b) => a - b);
 
         for (const level of b.platforms) {
             const y = 1500 - (level * px);
 
-            // Platform
+            // Deck
             sideCtx.strokeStyle = "#1E73FF";
             sideCtx.beginPath();
             sideCtx.moveTo(x, y);
@@ -174,7 +165,7 @@ function rebuildSideView() {
             sideCtx.lineTo(x + w, g2);
             sideCtx.stroke();
 
-            // Toe-board
+            // Toe board
             sideCtx.strokeStyle = "#6E6E6E";
             sideCtx.lineWidth = 3;
 
@@ -191,12 +182,9 @@ function rebuildSideView() {
 }
 
 // ------------------------------------------------------
-// REBUILD OUTRIGGERS LAYER
+// OUTRIGGERS
 // ------------------------------------------------------
 function rebuildOutriggers() {
-    outriggersCanvas.width = 1500;
-    outriggersCanvas.height = 1500;
-
     outriggersCtx.clearRect(0, 0, 1500, 1500);
 
     if (!project.outriggers.required) return;
@@ -218,20 +206,10 @@ function rebuildOutriggers() {
         outriggersCtx.lineTo(x - lengthPx, 1500);
         outriggersCtx.stroke();
 
-        outriggersCtx.beginPath();
-        outriggersCtx.moveTo(x, 1500);
-        outriggersCtx.lineTo(x - lengthPx, 1500 - (lengthPx * 0.5));
-        outriggersCtx.stroke();
-
         // Right
         outriggersCtx.beginPath();
         outriggersCtx.moveTo(x + w, 1500);
         outriggersCtx.lineTo(x + w + lengthPx, 1500);
-        outriggersCtx.stroke();
-
-        outriggersCtx.beginPath();
-        outriggersCtx.moveTo(x + w, 1500);
-        outriggersCtx.lineTo(x + w + lengthPx, 1500 - (lengthPx * 0.5));
         outriggersCtx.stroke();
 
         x += w;
@@ -239,14 +217,13 @@ function rebuildOutriggers() {
 }
 
 // ------------------------------------------------------
-// MAIN RENDER LOOP (GRID ALWAYS DRAWN)
+// RENDER LOOP
 // ------------------------------------------------------
 function render() {
     ctx.clearRect(0, 0, 1500, 1500);
 
     if (bgImage) ctx.drawImage(bgCanvas, 0, 0);
 
-    // Always draw grid (fixes side view)
     ctx.drawImage(gridCanvas, 0, 0);
 
     if (currentView === "top") {
@@ -347,20 +324,8 @@ canvas.addEventListener("mouseup", e => {
             h: h,
             widthM: Math.abs(w / meterSizePx),
             heightM: Math.abs(h / meterSizePx),
-            platforms: []   // REQUIRED FOR SIDE VIEW
+            platforms: []
         };
-
-        bays.push(bay);
-        project.bays = bays;
-
-        rebuildBays();
-        rebuildSideView();
-        rebuildOutriggers();
-        updateSummary();
-    }
-
-    needsRedraw = true;
-});
 
         bays.push(bay);
         project.bays = bays;
@@ -386,7 +351,6 @@ canvas.addEventListener("click", e => {
 
     const px = meterSizePx;
 
-    // Determine which bay was clicked
     let x = 0;
     let clickedBay = null;
 
@@ -401,14 +365,11 @@ canvas.addEventListener("click", e => {
 
     if (!clickedBay) return;
 
-    // Convert click height to meters
     const heightFromBottom = 1500 - my;
     const levelM = Math.round(heightFromBottom / px);
 
-    // Snap to lift height increments (2m)
     const snappedLevel = Math.round(levelM / project.liftHeightM) * project.liftHeightM;
 
-    // Toggle platform
     const idx = clickedBay.platforms.indexOf(snappedLevel);
     if (idx === -1) {
         clickedBay.platforms.push(snappedLevel);
@@ -423,7 +384,7 @@ canvas.addEventListener("click", e => {
 });
 
 // ------------------------------------------------------
-// DELETE SELECTED BAY
+// DELETE BAY
 // ------------------------------------------------------
 document.addEventListener("keydown", e => {
     if ((e.key === "Delete" || e.key === "Backspace") && selectedBay) {
@@ -442,7 +403,7 @@ document.addEventListener("keydown", e => {
 });
 
 // ------------------------------------------------------
-// INITIALIZE
+// INIT
 // ------------------------------------------------------
 buildGrid();
 rebuildBays();
