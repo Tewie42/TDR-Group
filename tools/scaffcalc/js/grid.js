@@ -69,6 +69,8 @@ function buildGrid() {
 }
 
 buildGrid();
+needsRedraw = true;
+animationLoop();
 
 // ------------------------------------------------------
 // BACKGROUND IMAGE (PRE-SCALED ONCE)
