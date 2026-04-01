@@ -254,12 +254,14 @@ function rebuildOutriggers() {
 }
 
 // ------------------------------------------------------
-// MAIN RENDER LOOP
+// MAIN RENDER LOOP (GRID ALWAYS DRAWN)
 // ------------------------------------------------------
 function render() {
     ctx.clearRect(0, 0, 1500, 1500);
 
     if (bgImage) ctx.drawImage(bgCanvas, 0, 0);
+
+    // ALWAYS draw the grid (fixes side view issue)
     ctx.drawImage(gridCanvas, 0, 0);
 
     if (currentView === "top") {
