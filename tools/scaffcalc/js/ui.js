@@ -90,6 +90,16 @@ function updateSummary() {
 
     document.getElementById("stabilityWarning").textContent = stabilityWarning;
 }
+const platformInput = document.getElementById("platformInput");
+if (platformInput) {
+    platformInput.addEventListener("input", e => {
+        project.platformLevels = parseInt(e.target.value) || 0;
+        rebuildSideView();
+        rebuildOutriggers();
+        updateSummary();
+        needsRedraw = true;
+    });
+}
 // ------------------------------------------------------
 // OUTRIGGER CALCULATION
 // ------------------------------------------------------
